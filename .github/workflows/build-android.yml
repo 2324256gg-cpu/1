@@ -1,0 +1,32 @@
+name: Build Sol Calendar APK
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'SolCalendar-MVP-source.zip'
+      - '.github/workflows/build-android.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract Android project
+        run: |
+          test -f SolCalendar-MVP-source.zip
+          unzip -q SolCalendar-MVP-source.zip -d /tmp/solcalendar-archive
+          cp -a /tmp/solcalendar-archive/SolCalendar/. .
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build debug APK
+        run: gradle assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SolCalendar-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
